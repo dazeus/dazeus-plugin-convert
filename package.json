@@ -1,0 +1,27 @@
+{
+  "name": "dazeus-convert",
+  "version": "0.1.0",
+  "description": "Convert command for DaZeus",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com:rnijveld/dazeus-convert.git"
+  },
+  "keywords": [
+    "dazeus",
+    "irc",
+    "convert",
+    "gunits"
+  ],
+  "author": "Ruben Nijveld <ruben@gewooniets.nl>",
+  "license": "BSD",
+  "readmeFilename": "README.md",
+  "dependencies": {
+    "dazeus": "",
+    "js-methods": "",
+    "optimist": ""
+  }
+}
