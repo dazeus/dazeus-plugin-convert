@@ -6,6 +6,7 @@ var fs = require('fs');
 var USERUNITS = 'user.units';
 var GUNITS = 'gunits';
 
+/** Create a new client */
 var client = dazeus.connect({path: '/tmp/dazeus.sock'}, function () {
     client.onCommand('convert', function (network, user, channel, command, conversion) {
         var parts = conversion.split(' to ');
@@ -33,40 +34,50 @@ var client = dazeus.connect({path: '/tmp/dazeus.sock'}, function () {
     client.onCommand('unit', function (network, user, channel, command, unit) {
         var parts = unit.split(' is ');
 
-        if (parts.length == 2) {
+        if (parts.length >= 1) {
             var name = parts.shift().trim();
-            var value = parts.shift().trim();
             var prefix = false;
 
             if (name[name.length - 1] === '-') {
                 prefix = true;
             }
 
-            if (!/^[a-z-]+$/.test(name)) {
-                client.reply(network, channel, user, "I'm sorry, but I only accept lowercase alphabetic unit names");
-            } else {
-                get_errors(function (before) {
-                    is_defined(prefix ? name.substr(0, name.length - 1) : name, function (defined, as_what) {
-                        is_base_unit(prefix ? name.substr(0, name.length - 1) : name, function (base) {
-                            if (!defined) {
-                                append(name, value, function () {
-                                    get_errors(function (after) {
-                                        if (after <= before) {
-                                            client.reply(network, channel, user, "Ok, " + name + " is now " + value);
-                                        } else {
-                                            remove(name, function () {
-                                                client.reply(network, channel, user, "I can't use that definition");
-                                            });
-                                        }
+            if (parts.length == 2) {
+                if (!/^[a-z-]+$/.test(name)) {
+                    client.reply(network, channel, user, "I'm sorry, but I only accept lowercase alphabetic unit names");
+                } else {
+                    var value = parts.shift().trim();
+                    get_errors(function (before) {
+                        is_defined(prefix ? name.substr(0, name.length - 1) : name, function (defined, as_what) {
+                            is_base_unit(prefix ? name.substr(0, name.length - 1) : name, function (base) {
+                                if (!defined) {
+                                    append(name, value, function () {
+                                        get_errors(function (after) {
+                                            if (after <= before) {
+                                                client.reply(network, channel, user, "Ok, " + name + " is now " + value);
+                                            } else {
+                                                remove(name, function () {
+                                                    client.reply(network, channel, user, "I can't use that definition");
+                                                });
+                                            }
+                                        });
                                     });
-                                });
-                            } else if (defined && !base) {
-                                client.reply(network, channel, user, name + " is already defined as " + as_what + ". Use }nounit " + name + " to forget");
-                            } else {
-                                client.reply(network, channel, user, name + " is already defined as " + as_what);
-                            }
+                                } else if (defined && !base) {
+                                    client.reply(network, channel, user, name + " is already defined as " + as_what + ". Use }nounit " + name + " to forget");
+                                } else {
+                                    client.reply(network, channel, user, name + " is already defined as " + as_what);
+                                }
+                            });
                         });
                     });
+                }
+            } else {
+                is_defined(prefix ? name.substr(0, name.length - 1) : name, function (defined, as_what) {
+                    if (defined) {
+                        client.reply(network, channel, user, name + " is " + as_what);
+                    } else {
+                        client.reply(network, channel, user, name + " is not defined");
+                    }
                 });
             }
         } else {
@@ -134,7 +145,7 @@ var is_defined = function (unit, cb) {
 };
 
 var remove = function (unit, cb) {
-    readFile(cb, function (elems) {
+    readfile(function (elems) {
         for (var i in elems) {
             if (elems.hasOwnProperty(i)) {
                 if (elems[i].indexOf(unit + ' ') === 0) {
@@ -142,7 +153,7 @@ var remove = function (unit, cb) {
                 }
             }
         }
-        writeFile(elems, function () {
+        writefile(elems, function () {
             cb();
         });
     });
@@ -171,7 +182,7 @@ var writefile = function (data, cb) {
             }
         }
     }
-    stream.close();
+    stream.end();
     cb();
 };
 
