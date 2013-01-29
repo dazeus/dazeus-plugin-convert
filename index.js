@@ -34,7 +34,7 @@ var client = dazeus.connect({path: '/tmp/dazeus.sock'}, function () {
     client.onCommand('unit', function (network, user, channel, command, unit) {
         var parts = unit.split(' is ');
 
-        if (parts.length >= 1) {
+        if (parts.length >= 1 && parts[0].trim().length > 0) {
             var name = parts.shift().trim();
             var prefix = false;
 
@@ -42,7 +42,9 @@ var client = dazeus.connect({path: '/tmp/dazeus.sock'}, function () {
                 prefix = true;
             }
 
-            if (parts.length == 2) {
+            console.log(parts);
+
+            if (parts.length >= 1 && parts[0].trim().length > 0) {
                 if (!/^[a-z-]+$/.test(name)) {
                     client.reply(network, channel, user, "I'm sorry, but I only accept lowercase alphabetic unit names");
                 } else {

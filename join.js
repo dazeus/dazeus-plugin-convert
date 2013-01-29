@@ -6,8 +6,10 @@ var argv = require('optimist')
     .argv;
 
 var client = dazeus.connect({path: '/tmp/dazeus.sock'}, function () {
-    client.join(n, c);
-    client.close(function () {
-        console.log("Aaaand... we're done!");
+    client.join(argv.n, argv.c, function (result) {
+        console.log(result);
+        client.close(function () {
+            console.log("Aaaand... we're done!");
+        });
     });
 });
