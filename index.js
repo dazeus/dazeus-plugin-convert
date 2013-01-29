@@ -42,8 +42,6 @@ var client = dazeus.connect({path: '/tmp/dazeus.sock'}, function () {
                 prefix = true;
             }
 
-            console.log(parts);
-
             if (parts.length >= 1 && parts[0].trim().length > 0) {
                 if (!/^[a-z-]+$/.test(name)) {
                     client.reply(network, channel, user, "I'm sorry, but I only accept lowercase alphabetic unit names");
