@@ -1,6 +1,6 @@
 {
-  "name": "dazeus-convert",
-  "version": "0.2.1",
+  "name": "dazeus-plugin-convert",
+  "version": "0.3.0",
   "description": "Convert command for DaZeus",
   "main": "index.js",
   "scripts": {
@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com:rnijveld/dazeus-convert.git"
+    "url": "git://github.com:dazeus/dazeus-plugin-convert.git"
   },
   "keywords": [
     "dazeus",

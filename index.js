@@ -3,13 +3,37 @@ var dazeus = require("dazeus");
 var spawn = require('child_process').spawn;
 var fs = require('fs');
 
-var USERUNITS = 'user.units';
-var GUNITS = 'gunits';
+var CONVERT = 'convert';
+var TO = ' to ';
+var IS = ' is ';
+var UNIT = 'unit';
+var NOUNIT = 'nounit';
+var HELP = "To convert, use }" + CONVERT + " [from]" + TO +
+    "[to]; to learn new units use }" + UNIT + " [unit]" + IS + "[definition]; }" + NOUNIT +
+    " forgets units";
+var ERR_INVALID_NAME = "I'm sorry, but I only accept lowercase alphabetic unit names";
+
+
+// lets parse command line args
+var argv = dazeus.optimist()
+    .string("units")
+    .default("units", "units")
+    .describe("units", "Path to units binary")
+    .alias("units", "u")
+    .string("store")
+    .describe("store", "Location where custom units should be stored")
+    .alias("store", "s")
+    .default("store", "user.units")
+    .argv;
+dazeus.help(argv);
+var options = dazeus.optionsFromArgv(argv);
+var USERUNITS = argv.store;
+var GUNITS = argv.units;
 
 /** Create a new client */
-var client = dazeus.connect({path: '/tmp/dazeus.sock'}, function () {
-    client.onCommand('convert', function (network, user, channel, command, conversion) {
-        var parts = conversion.split(' to ');
+var client = dazeus.connect(options, function () {
+    client.onCommand(CONVERT, function (network, user, channel, command, conversion) {
+        var parts = conversion.split(TO);
         if (parts.length == 2) {
             var from = parts.shift().trim();
             var to = parts.shift().trim();
@@ -27,12 +51,12 @@ var client = dazeus.connect({path: '/tmp/dazeus.sock'}, function () {
                 }
             });
         } else {
-            client.reply(network, channel, user, "To convert, use }convert [from] to [to]; to learn new units use }unit [unit] is [definition]");
+            client.reply(network, channel, user, HELP);
         }
     });
 
-    client.onCommand('unit', function (network, user, channel, command, unit) {
-        var parts = unit.split(' is ');
+    client.onCommand(UNIT, function (network, user, channel, command, unit) {
+        var parts = unit.split(IS);
 
         if (parts.length >= 1 && parts[0].trim().length > 0) {
             var name = parts.shift().trim();
@@ -44,7 +68,7 @@ var client = dazeus.connect({path: '/tmp/dazeus.sock'}, function () {
 
             if (parts.length >= 1 && parts[0].trim().length > 0) {
                 if (!/^[a-z-]+$/.test(name)) {
-                    client.reply(network, channel, user, "I'm sorry, but I only accept lowercase alphabetic unit names");
+                    client.reply(network, channel, user, ERR_INVALID_NAME);
                 } else {
                     var value = parts.shift().trim();
                     get_errors(function (before) {
@@ -63,7 +87,7 @@ var client = dazeus.connect({path: '/tmp/dazeus.sock'}, function () {
                                         });
                                     });
                                 } else if (defined && !base) {
-                                    client.reply(network, channel, user, name + " is already defined as " + as_what + ". Use }nounit " + name + " to forget");
+                                    client.reply(network, channel, user, name + " is already defined as " + as_what + ". Use }" + NOUNIT + " " + name + " to forget");
                                 } else {
                                     client.reply(network, channel, user, name + " is already defined as " + as_what);
                                 }
@@ -81,11 +105,11 @@ var client = dazeus.connect({path: '/tmp/dazeus.sock'}, function () {
                 });
             }
         } else {
-            client.reply(network, channel, user, "To convert, use }convert [from] to [to]; to learn new units use }unit [unit] is [definition]");
+            client.reply(network, channel, user, HELP);
         }
     });
 
-    client.onCommand('nounit', function (network, user, channel, command, toremove) {
+    client.onCommand(NOUNIT, function (network, user, channel, command, toremove) {
         var name = toremove.trim();
         if (!/^[a-z-]+$/.test(name)) {
             client.reply(network, channel, user, "I'm sorry, but I only accept lowercase alphabetic unit names");
